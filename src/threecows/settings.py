@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     # custom
     'core',
     'user',
+    'cattle',
 ]
 
 MIDDLEWARE = [
