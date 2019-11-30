@@ -1,3 +1,4 @@
+import datetime
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 
@@ -55,13 +56,30 @@ class ModelTests(TestCase):
 
         self.assertEqual(str(tag), tag.name)
 
-    # def test_cow_str(self):
-    #     """Test creating a bovid"""
-    #     cow = models.Bovid.objects.create(
-    #         type_of_bovid='Brahman',
-    #         user=sample_user(),
-    #         name='Bessie'
-    #     )
+    def test_cow_str(self):
+        """Test creating a bovid"""
+        cow = models.Bovid.objects.create(
+            type_of_bovid='Brahman',
+            user=sample_user(),
+            name='Bessie'
+        )
 
-    #     self.assertEqual(str(cow), cow.name)
-    #     self.assertEqual('Brahman', cow.type_of_bovid)
+        self.assertEqual(str(cow), cow.name)
+        self.assertEqual('Brahman', cow.type_of_bovid)
+
+    def test_life_events(self):
+        """Test that a life event can be created"""
+        a_cow = models.Bovid.objects.create(
+            name='Big',
+            type_of_bovid='Brahman',
+            user=sample_user()
+            )
+        event = models.LifeEvent.objects.create(
+           bovid=a_cow,
+           event_date=datetime.date.today(),
+           notes='Some test text to seeeee'
+        )
+        self.assertEqual('Big', a_cow.name)
+        self.assertEqual('Brahman', a_cow.type_of_bovid)
+        self.assertEqual(event.event_date, datetime.date.today())
+        self.assertEqual(event.bovid, a_cow)
