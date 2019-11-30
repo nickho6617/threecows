@@ -50,7 +50,18 @@ class ModelTests(TestCase):
         """Test the tag string representation"""
         tag = models.Tag.objects.create(
             user=sample_user(),
-            name='Vegan'
+            name='Bessie'
         )
 
         self.assertEqual(str(tag), tag.name)
+
+    # def test_cow_str(self):
+    #     """Test creating a bovid"""
+    #     cow = models.Bovid.objects.create(
+    #         type_of_bovid='Brahman',
+    #         user=sample_user(),
+    #         name='Bessie'
+    #     )
+
+    #     self.assertEqual(str(cow), cow.name)
+    #     self.assertEqual('Brahman', cow.type_of_bovid)
