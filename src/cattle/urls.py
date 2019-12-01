@@ -6,6 +6,7 @@ from cattle import views
 
 router = DefaultRouter()
 router.register('tags', views.TagViewSet)
+router.register('events', views.LifeEventViewSet)
 
 app_name = 'cattle'
 
