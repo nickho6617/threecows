@@ -2,7 +2,7 @@ from rest_framework import viewsets, mixins
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from core.models import Tag, LifeEvent
+from core.models import Tag, LifeEvent, Bovid
 
 from cattle import serializers
 
@@ -33,3 +33,15 @@ class LifeEventViewSet(viewsets.GenericViewSet,
     permission_classes = (IsAuthenticated,)
     queryset = LifeEvent.objects.all()
     serializer_class = serializers.LifeEventSerializer
+
+
+class BovidViewSet(viewsets.ModelViewSet):
+    """Manage bovines in the database"""
+    serializer_class = serializers.BovidSerializer
+    queryset = Bovid.objects.all()
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        """Retrieve the recipes for the authenticated user"""
+        return self.queryset.filter(user=self.request.user)

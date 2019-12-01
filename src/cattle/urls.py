@@ -7,6 +7,7 @@ from cattle import views
 router = DefaultRouter()
 router.register('tags', views.TagViewSet)
 router.register('events', views.LifeEventViewSet)
+router.register('bovids', views.BovidViewSet)
 
 app_name = 'cattle'
 
