@@ -1,8 +1,20 @@
+import uuid
+import os
+
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, \
                                         PermissionsMixin
 from django.conf import settings
+
+
+# helper function for creating image paths
+def bovid_image_file_path(instance, filename):
+    """Generate file path for new bovid image"""
+    ext = filename.split('.')[-1]
+    filename = f'{uuid.uuid4()}.{ext}'
+
+    return os.path.join('uploads/bovid/', filename)
 
 
 class UserManager(BaseUserManager):
@@ -52,10 +64,28 @@ class Tag(models.Model):
         return self.name
 
 
+class LifeEvent(models.Model):
+    """Model to hold any events related to an animal.
+    eg vet, grazing, giving birth
+    """
+    event_type = models.CharField(max_length=100)
+    notes = models.TextField(blank=True)
+    event_date = models.DateField()
+    created = models.DateTimeField(default=timezone.now)
+    bovid = models.ForeignKey('Bovid', on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+
+    def __str__(self):
+        return self.event_type
+
+
 class Bovid(models.Model):
     """This model will hold the cows in their various shapes and form"""
 
-    # image = models.ImageField(upload_to='images/', blank=True)
+    image = models.ImageField(null=True, upload_to=bovid_image_file_path)
     mothers_name = models.CharField(max_length=150, blank=True)
     fathers_name = models.CharField(max_length=150, blank=True)
     type_of_bovid = models.CharField(max_length=100)
@@ -65,8 +95,7 @@ class Bovid(models.Model):
     price = models.DecimalField(
         max_digits=6,
         decimal_places=2,
-        blank=True,
-        null=True
+        default=0.00
         )
     date_of_birth = models.DateField(blank=True, null=True)
     date_of_death = models.DateField(blank=True, null=True)
@@ -75,6 +104,7 @@ class Bovid(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
     tags = models.ManyToManyField('Tag', blank=True)
+    # events = models.ManyToManyField('LifeEvent', blank=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -82,21 +112,3 @@ class Bovid(models.Model):
 
     def __str__(self):
         return self.name
-
-
-class LifeEvent(models.Model):
-    """Model to hold any events related to an animal.
-    eg vet, grazing, giving birth
-    """
-    bovid = models.ForeignKey(
-        Bovid,
-        on_delete=models.CASCADE,
-        related_name='bovids'
-        )
-    event_type = models.CharField(max_length=100)
-    notes = models.TextField(blank=True)
-    event_date = models.DateField()
-    created = models.DateTimeField(default=timezone.now)
-
-    def __str__(self):
-        return self.event_type

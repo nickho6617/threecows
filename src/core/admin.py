@@ -5,6 +5,10 @@ from django.utils.translation import gettext as _
 from core import models
 
 
+class EventInline(admin.TabularInline):
+    model = models.LifeEvent
+
+
 class UserAdmin(BaseUserAdmin):
     ordering = ['id']
     list_display = ['email', 'name']
@@ -31,7 +35,30 @@ class UserAdmin(BaseUserAdmin):
     )
 
 
+class BovidAdmin(admin.ModelAdmin):
+    inlines = [
+        EventInline,
+    ]
+    list_display = (
+            'type_of_bovid',
+            'date_of_birth',
+            'breed',
+            'name',
+            'price'
+    )
+
+
+class LifeEventAdmin(admin.ModelAdmin):
+    list_display = (
+            'event_type',
+            'notes',
+            'event_date',
+            'bovid',
+            'user'
+    )
+
+
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.Tag)
-admin.site.register(models.Bovid)
-admin.site.register(models.LifeEvent)
+admin.site.register(models.Bovid, BovidAdmin)
+admin.site.register(models.LifeEvent, LifeEventAdmin)

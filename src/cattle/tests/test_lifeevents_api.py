@@ -39,20 +39,23 @@ class PrivateEventsAPITests(TestCase):
 
     def test_retrieve_life_event_list(self):
         """Test retrieving a list of life events"""
-        a_cow = Bovid.objects.create(
-            name='Big',
+
+        cow = Bovid.objects.create(
             type_of_bovid='Brahman',
-            user=self.user
+            user=self.user,
+            name='Bessie'
         )
         LifeEvent.objects.create(
-            bovid=a_cow,
             event_type='birth',
-            event_date='2019-12-01'
+            event_date='2019-12-01',
+            user=self.user,
+            bovid=cow
             )
         LifeEvent.objects.create(
-            bovid=a_cow,
             event_type='suckled',
-            event_date='2019-12-01'
+            event_date='2019-12-01',
+            user=self.user,
+            bovid=cow
             )
 
         res = self.client.get(LIFEEVENT_URL)
@@ -62,3 +65,26 @@ class PrivateEventsAPITests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data[0], serializer.data[0])
         self.assertEqual(res.data[1], serializer.data[1])
+
+
+def test_create_life_event_successful(self):
+    """Test creating a new life event"""
+    payload = {
+        'event_type': 'suckled',
+        'event_date': '2019-12-01'
+        }
+    self.client.post(LIFEEVENT_URL, payload)
+
+    exists = LifeEvent.objects.filter(
+        user=self.user,
+        name=payload['event_type']
+    ).exists()
+    self.assertTrue(exists)
+
+
+def test_create_life_event_invalid(self):
+    """Test creating invalid life event fails"""
+    payload = {'event_type': ''}
+    res = self.client.post(LIFEEVENT_URL, payload)
+
+    self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)

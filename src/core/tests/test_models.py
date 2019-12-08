@@ -1,5 +1,6 @@
 import datetime
 from django.test import TestCase
+from unittest.mock import patch
 from django.contrib.auth import get_user_model
 
 from core import models
@@ -69,17 +70,27 @@ class ModelTests(TestCase):
 
     def test_life_events(self):
         """Test that a life event can be created"""
-        a_cow = models.Bovid.objects.create(
-            name='Big',
+        user = sample_user()
+        cow = models.Bovid.objects.create(
             type_of_bovid='Brahman',
-            user=sample_user()
-            )
-        event = models.LifeEvent.objects.create(
-           bovid=a_cow,
-           event_date=datetime.date.today(),
-           notes='Some test text to seeeee'
+            user=user,
+            name='Bessie'
         )
-        self.assertEqual('Big', a_cow.name)
-        self.assertEqual('Brahman', a_cow.type_of_bovid)
-        self.assertEqual(event.event_date, datetime.date.today())
-        self.assertEqual(event.bovid, a_cow)
+        event = models.LifeEvent.objects.create(
+            event_type='Innoculation',
+            event_date=datetime.date.today(),
+            notes='Some test text to seeeee',
+            user=user,
+            bovid=cow
+        )
+        self.assertEqual(str(event), event.event_type)
+
+    @patch('uuid.uuid4')
+    def test_bovid_file_name_uuid(self, mock_uuid):
+        """Test that image is saved in the correct location"""
+        uuid = 'test-uuid'
+        mock_uuid.return_value = uuid
+        file_path = models.bovid_image_file_path(None, 'myimage.jpg')
+
+        exp_path = f'uploads/bovid/{uuid}.jpg'
+        self.assertEqual(file_path, exp_path)
