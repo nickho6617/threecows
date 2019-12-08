@@ -39,3 +39,12 @@ class BovidDetailSerializer(BovidSerializer):
     """Serializer for bovid object"""
 
     tags = TagSerializer(many=True, read_only=True)
+
+
+class BovidImageSerializer(serializers.ModelSerializer):
+    """Serializer for uploading images to bovine"""
+
+    class Meta:
+        model = Bovid
+        fields = ('id', 'image')
+        read_only_fields = ('id',)

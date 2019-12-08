@@ -1,3 +1,8 @@
+import tempfile
+import os
+
+from PIL import Image
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -13,6 +18,11 @@ CATTLE_URL = reverse('cattle:bovid-list')
 
 
 # Helper functions to setup data
+def image_upload_url(bovid_id):
+    """Return URL for bovid image upload"""
+    return reverse('cattle:bovid-upload-image', args=[bovid_id])
+
+
 def sample_tag(user, name='inspuitings klaar'):
     """Create and return a sample tag"""
     return Tag.objects.create(user=user, name=name)
@@ -142,3 +152,36 @@ class PrivateBovidApiTests(TestCase):
         self.assertEqual(tags.count(), 2)
         self.assertIn(tag1, tags)
         self.assertIn(tag2, tags)
+
+
+class BovidImageUploadTests(TestCase):
+
+    def setUp(self):
+        self.client = APIClient()
+        self.user = get_user_model().objects.create_user('user', 'testpass')
+        self.client.force_authenticate(self.user)
+        self.bovid = sample_bovine(user=self.user)
+
+    def tearDown(self):
+        self.bovid.image.delete()
+
+    def test_upload_image_to_bovid(self):
+        """Test uploading an image to bovid"""
+        url = image_upload_url(self.bovid.id)
+        with tempfile.NamedTemporaryFile(suffix='.jpg') as ntf:
+            img = Image.new('RGB', (10, 10))
+            img.save(ntf, format='JPEG')
+            ntf.seek(0)
+            res = self.client.post(url, {'image': ntf}, format='multipart')
+
+        self.bovid.refresh_from_db()
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertIn('image', res.data)
+        self.assertTrue(os.path.exists(self.bovid.image.path))
+
+    def test_upload_image_bad_request(self):
+        """Test uploading an invalid image"""
+        url = image_upload_url(self.bovid.id)
+        res = self.client.post(url, {'image': 'notimage'}, format='multipart')
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
