@@ -153,6 +153,62 @@ class PrivateBovidApiTests(TestCase):
         self.assertIn(tag1, tags)
         self.assertIn(tag2, tags)
 
+    def test_filter_bovids_by_tags(self):
+        """Test returning bovids with specific tags"""
+        bovid1 = sample_bovine(
+                            user=self.user,
+                            name='bossie',
+                            type_of_bovid='dog'
+                            )
+        bovid2 = sample_bovine(
+                            user=self.user,
+                            name='bessie',
+                            type_of_bovid='cat'
+                            )
+        tag1 = sample_tag(user=self.user, name='Vegan')
+        tag2 = sample_tag(user=self.user, name='Vegetarian')
+        bovid1.tags.add(tag1)
+        bovid2.tags.add(tag2)
+        bovid3 = sample_bovine(
+                            user=self.user,
+                            name='bissie',
+                            type_of_bovid='vark'
+                            )
+
+        res = self.client.get(
+            CATTLE_URL,
+            {'tags': '{},{}'.format(tag1.id, tag2.id)}
+        )
+
+        serializer1 = BovidSerializer(bovid1)
+        serializer2 = BovidSerializer(bovid2)
+        serializer3 = BovidSerializer(bovid3)
+        self.assertIn(serializer1.data, res.data)
+        self.assertIn(serializer2.data, res.data)
+        self.assertNotIn(serializer3.data, res.data)
+
+    # def test_filter_bovids_by_ingredients(self):
+    #     """Test returning bovids with specific events"""
+    #     recipe1 = sample_recipe(user=self.user, title='Posh beans on toast')
+    #     recipe2 = sample_recipe(user=self.user, title='Chicken cacciatore')
+    #     ingredient1 = sample_ingredient(user=self.user, name='Feta cheese')
+    #     ingredient2 = sample_ingredient(user=self.user, name='Chicken')
+    #     recipe1.ingredients.add(ingredient1)
+    #     recipe2.ingredients.add(ingredient2)
+    #     recipe3 = sample_recipe(user=self.user, title='Steak and mushrooms')
+
+    #     res = self.client.get(
+    #         RECIPES_URL,
+    #         {'ingredients': '{},{}'.format(ingredient1.id, ingredient2.id)}
+    #     )
+
+    #     serializer1 = RecipeSerializer(recipe1)
+    #     serializer2 = RecipeSerializer(recipe2)
+    #     serializer3 = RecipeSerializer(recipe3)
+    #     self.assertIn(serializer1.data, res.data)
+    #     self.assertIn(serializer2.data, res.data)
+    #     self.assertNotIn(serializer3.data, res.data)
+
 
 class BovidImageUploadTests(TestCase):
 
