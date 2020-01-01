@@ -85,7 +85,7 @@ class LifeEvent(models.Model):
 class Bovid(models.Model):
     """This model will hold the cows in their various shapes and form"""
 
-    image = models.ImageField(null=True, upload_to=bovid_image_file_path)
+    image = models.ImageField(null=True, upload_to=bovid_image_file_path, blank=True)
     mothers_name = models.CharField(max_length=150, blank=True)
     fathers_name = models.CharField(max_length=150, blank=True)
     type_of_bovid = models.CharField(max_length=100)
